@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/daniel-bican/jx-go-demo:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/daniel-bican/jx-go-demo:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jx-go-demo
+        chartPath: charts/jx-go-demo
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/daniel-bican/jx-go-demo'
+          image.tag: '{{.DIGEST_HEX}}'
